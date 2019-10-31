@@ -36,6 +36,11 @@ const Register = Loadable({
   loading: loadingComponent
 });
 
+const ShareResume = Loadable({
+  loader: () => import('./views/Pages/ShareResume'),
+  loading: loadingComponent
+});
+
 const Page404 = Loadable({
   loader: () => import('./views/Pages/Page404'),
   loading: loadingComponent
@@ -47,6 +52,7 @@ class App extends Component {
     return (
       <BrowserRouter>
             <Switch>
+              <Route exact path="/share-resume/:name" name="Share Page" component={ShareResume} />
               <Route exact path="/register" name="Register Page" component={Register} />
               <Route exact path="/404" name="Page 404" component={Page404} />
               <Route path="/login"  name="Login Page" component={Login}/>
@@ -55,6 +61,7 @@ class App extends Component {
       </BrowserRouter>
     );
   }
+
 }
 
 export default App;

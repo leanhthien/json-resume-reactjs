@@ -7,26 +7,24 @@ class Login extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      username: "",
-      password: "",
-      formErrors: { username: "", password: "" },
+      username: '',
+      password: '',
+      formErrors: { username: '', password: '' },
       errLogin: false,
       msg: ""
     };
-    this.apiBaseUrl = process.env.REACT_APP_DOMAIN;
+    this.apiBaseUrl = process.env.REACT_APP_BASE_URL;
   }
 
   async componentDidMount() {
-    //TODO: Check token
 
     if (Cookies.get("token")) {
       this.token = Cookies.get("token");
       await axios
-        .post(`http://127.0.0.1:8080/my-app/api/token`, {
-          headers: { Authorization: `${this.token}` }
+        .post(`${this.apiBaseUrl}token`, {
+          headers: { Authorization: this.token }
         })
         .then(response => {
-          // TODO:
           this.props.history.push("/dashboard");
         })
         .catch(error => {
@@ -70,7 +68,7 @@ class Login extends Component {
           params.append('password', this.state.password);
   
       await axios
-        .post('http://127.0.0.1:8080/my-app/api/login', params)
+        .post(`${this.apiBaseUrl}login`, params)
         .then(response => {
           try {
             Cookies.set("token", response.data.data.token);
@@ -88,7 +86,6 @@ class Login extends Component {
         });
     }
 
-    
   }
 
   registerClick(event) {
@@ -119,7 +116,6 @@ class Login extends Component {
     const { username, password, formErrors } = this.state;
 
     let errUsername, errPassword;
-    console.log("State " + formErrors.username);
     if (formErrors.username) {
       errUsername = (
         <label
@@ -162,6 +158,7 @@ class Login extends Component {
               <input
                 type="text"
                 value={username}
+                autoComplete="username"
                 onChange={this.onChangeUsername}
                 className="form-control"
               />
@@ -177,6 +174,7 @@ class Login extends Component {
                 type="password"
                 name="password"
                 value={password}
+                autoComplete="current-password"
                 onChange={e => this.onChangePassword(e)}
                 className="form-control"
               />
@@ -184,7 +182,6 @@ class Login extends Component {
           </div>
           {errPassword}
           
-
           <div className="text-center">
             <button
               id="loginSubmit"

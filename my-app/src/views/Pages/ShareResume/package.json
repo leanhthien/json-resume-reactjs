@@ -1,0 +1,6 @@
+{
+    "name": "shareresume",
+    "version": "0.0.0",
+    "private": true,
+    "main": "./ShareResume.js"
+  }

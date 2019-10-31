@@ -1,7 +1,6 @@
 import React, { Component, Suspense } from "react";
 import { Redirect, Route, Switch } from "react-router-dom";
 import { Container } from "reactstrap";
-import axios from "axios";
 import Cookies from "js-cookie";
 
 import routes from "../../routes";
@@ -9,14 +8,18 @@ import routes from "../../routes";
 class DefaultLayout extends Component {
   constructor(props) {
     super(props);
-    this.user = Cookies.get("username");
-    // this.navigation = navigation(parseInt(this.role));
+    this.apiBaseUrl = process.env.REACT_APP_BASE_URL;
+    this.token = Cookies.get("token");
+    this.username = Cookies.get("username");
+    
   }
 
   componentDidMount() {
     if (!Cookies.get("token")) {
+      
       return this.props.history.push("/login");
     }
+    
 
   }
 
@@ -28,6 +31,45 @@ class DefaultLayout extends Component {
     return (
       <div>
         <main className="main">
+          <nav className="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+            <a className="navbar-brand" href="/">
+              Json Resume
+            </a>
+            <ul className="navbar-nav mr-auto"></ul>
+            <ul className="navbar-nav">
+              <li className="nav-item">
+                <a className="nav-link guestNavigation" href="/regiter">
+                  Sign up
+                </a>
+              </li>
+              <li className="nav-item">
+                <a className="nav-link guestNavigation" href="/login">
+                  Sign in
+                </a>
+              </li>
+              <li className="nav-item">
+                <a
+                  id="usernameNavigation"
+                  className="nav-link userNavigation"
+                  href="/dashboard"
+                >
+                  {this.username}
+                </a>
+              </li>
+              <li className="nav-item">
+                <a className="nav-link userNavigation" href="/">
+                  Create resume
+                </a>
+              </li>
+              <li className="nav-item">
+                <a className="nav-link userNavigation" href="">
+                  Log out
+                </a>
+
+              </li>
+            </ul>
+          </nav>
+
           <Container fluid>
             <Suspense fallback={this.loading()}>
               <Switch>

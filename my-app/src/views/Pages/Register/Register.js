@@ -22,11 +22,25 @@ class Register extends Component {
       errLogin: false,
       msg: ""
     };
-    this.apiBaseUrl = process.env.REACT_APP_DOMAIN;
+    this.apiBaseUrl = process.env.REACT_APP_BASE_URL;
   }
 
   async componentDidMount() {
-    //TODO: Check token
+    if (Cookies.get("token")) {
+      this.token = Cookies.get("token");
+      await axios
+        .post(`${this.apiBaseUrl}token`, {
+          headers: { Authorization: `${this.token}` }
+        })
+        .then(response => {
+          this.props.history.push("/dashboard");
+        })
+        .catch(error => {
+          this.setState({
+            resForm: { hasError: true, msg: error.response.data.data }
+          });
+        });
+    }
   }
 
   onChangeUsername(e) {
@@ -42,16 +56,18 @@ class Register extends Component {
   }
 
   validateField() {
-    
     let usernameValid = this.state.username.length >= 3;
     let passwordValid = this.state.password.length >= 6;
     let retypePasswordValid = this.state.password === this.state.retypePassword;
-    
+
     this.setState({
-      formErrors: { 
-        username: usernameValid ? "" : " Invalid username", 
+      formErrors: {
+        username: usernameValid ? "" : " Invalid username",
         password: passwordValid ? "" : "Password at least 6 characters",
-        retypePassword: retypePasswordValid ? "" : "Do not match, please re-enter"}
+        retypePassword: retypePasswordValid
+          ? ""
+          : "Do not match, please re-enter"
+      }
     });
 
     return usernameValid && passwordValid && retypePasswordValid;
@@ -64,20 +80,19 @@ class Register extends Component {
 
     if (isValid === true) {
       let params = new URLSearchParams();
-          params.append('username', this.state.username);
-          params.append('password', this.state.password);
-          params.append('retypePassword', this.state.password);
-  
+      params.append("username", this.state.username);
+      params.append("password", this.state.password);
+      params.append("retypePassword", this.state.password);
+
       await axios
-        .post(`http://127.0.0.1:8080/my-app/api/registration`, params)
+        .post(this.apiBaseUrl + `registration`, params)
         .then(response => {
           try {
             Cookies.set("token", response.data.data.token);
             Cookies.set("userId", response.data.data.appUser.userId);
             Cookies.set("username", response.data.data.appUser.userName);
             this.props.history.push("/dashboard");
-          }
-          catch(error) {
+          } catch (error) {
             this.setState({ errLogin: true, msg: error });
           }
         })
@@ -87,7 +102,6 @@ class Register extends Component {
           });
         });
     }
-    
   }
 
   loginClick(event) {
@@ -154,7 +168,7 @@ class Register extends Component {
     }
 
     return (
-      <div >
+      <div>
         <h2 className="text-center">Register</h2>
 
         {this.renderErrorRegister()}
