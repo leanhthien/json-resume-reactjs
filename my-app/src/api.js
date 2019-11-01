@@ -1,25 +1,30 @@
-import React, { Component } from "react";
+import { Component } from "react";
 import axios from "axios";
-import Cookies from "js-cookie";
 
 class API extends Component {
-  constructor(props) {
-    super(props);
-    this.apiBaseUrl = process.env.REACT_APP_BASE_URL;
-    this.token = Cookies.get("token");
-    this.username = Cookies.get("username");
-    this.authorization = {
-      headers: {
-        Authorization: this.token
-      }
-    };
+
+
+  async checkPermission(apiBaseUrl, authorization) {
+
+    try {
+      await axios.get(`${apiBaseUrl}token`, {
+        headers: {
+          Authorization: authorization
+        }
+      });
+    } catch (error) {
+      console.log('Error ' + error);
+    }
   }
 
-  async checkPermission() {
+  async getDetaillResume(apiBaseUrl, id) {
+    let params = new URLSearchParams();
+      params.append("id", id);
+
     try {
-      await axios.get(`${this.apiBaseUrl}token`, this.authorization);
+      await axios.get(`${apiBaseUrl}product/detail`, params);
     } catch (error) {
-      this.props.history.push("/login");
+      console.log('Error ' + error);
     }
   }
 

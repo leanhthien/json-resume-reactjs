@@ -2,13 +2,13 @@ import React, { Component } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import API from "../../api";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 class Dashboard extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      resumes: []
+      resumes: [],
+      shareLink: ""
     };
     this.apiBaseUrl = process.env.REACT_APP_BASE_URL;
     this.token = Cookies.get("token");
@@ -21,12 +21,18 @@ class Dashboard extends Component {
   }
 
   async componentDidMount() {
-    let status = await this.checkPermission();
-
-    // API.checkPermission;
+    await new API()
+      .checkPermission(this.apiBaseUrl, this.token)
+      .then(response => {})
+      .catch(error => {
+        this.props.history.push("/login");
+      });
 
     let data = await this.getUserResume();
     this.setState({ resumes: data });
+    this.setState({
+      shareLink: `${window.location.origin}/share-resume/${this.username}`
+    });
   }
 
   async checkPermission() {
@@ -40,8 +46,7 @@ class Dashboard extends Component {
   async getUserResume() {
     try {
       let response = await axios.get(
-        `${this.apiBaseUrl}product/user?username=${this.username}`,
-        this.authorization
+        `${this.apiBaseUrl}product/user?username=${this.username}`
       );
 
       if (response.data.data) {
@@ -99,7 +104,7 @@ class Dashboard extends Component {
         enableTop = (
           <button
             className="link-button"
-            onClick={event => this.enableTopClick(event)}
+            onClick={event => this.enableTopClick(event, element.productId)}
           >
             Enable top
           </button>
@@ -115,7 +120,7 @@ class Dashboard extends Component {
           <td>
             <button
               className="link-button"
-              onClick={event => this.enableTopClick(event)}
+              onClick={event => this.viewClick(event, element.productId)}
             >
               View
             </button>
@@ -123,7 +128,7 @@ class Dashboard extends Component {
           <td>
             <button
               className="link-button"
-              onClick={event => this.enableTopClick(event)}
+              onClick={event => this.editClick(event, element.productId)}
             >
               Edit
             </button>
@@ -132,7 +137,7 @@ class Dashboard extends Component {
           <td>
             <button
               className="link-button"
-              onClick={event => this.enableTopClick(event)}
+              onClick={event => this.deleteClick(event, element.productId)}
             >
               Delete
             </button>
@@ -144,8 +149,6 @@ class Dashboard extends Component {
   };
 
   genModalContent = () => {
-    let shareLink = `${window.location.origin}/share-resume/${this.username}`;
-
     let emptyModal = (
       <div id="empty-resume-modal" className="text-center">
         <p>You don't have any resume to share. Let make new one to start!</p>
@@ -160,9 +163,8 @@ class Dashboard extends Component {
           type="text"
           className="form-control"
           readOnly
-        >
-          {shareLink}
-        </input>
+          value={this.state.shareLink}
+        ></input>
       </div>
     );
 
@@ -173,12 +175,63 @@ class Dashboard extends Component {
     }
   };
 
-  async enableTopClick(event) {
+  async viewClick(event, id) {
     event.preventDefault();
+    this.props.history.push(`/resume/detail/${id}`);
+  }
+
+  async editClick(event, id) {
+    event.preventDefault();
+    this.props.history.push(`/resume/edit/${id}`);
+  }
+
+  async enableTopClick(event, id) {
+    event.preventDefault();
+    try {
+      let params = new URLSearchParams();
+      params.append("username", this.username);
+      params.append("id", id);
+
+      let response = await axios.post(
+        `${this.apiBaseUrl}product/enable`,
+        params
+      );
+
+      if (response.data.data) {
+        return response.data.data;
+      } else {
+        return null;
+      }
+    } catch (error) {
+      return null;
+    }
+  }
+
+  async deleteClick(event, id) {
+    event.preventDefault();
+    try {
+      let params = new URLSearchParams();
+      params.append("username", this.username);
+      params.append("id", id);
+
+      let response = await axios.post(
+        `${this.apiBaseUrl}product/delete`,
+        params
+      );
+
+      if (response.data.data) {
+        return response.data.data;
+      } else {
+        return null;
+      }
+    } catch (error) {
+      return null;
+    }
   }
 
   async createClick(event) {
     event.preventDefault();
+    this.props.history.push("/resume/new");
   }
 
   renderErrorLoadUser() {

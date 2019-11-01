@@ -15,12 +15,10 @@ class DefaultLayout extends Component {
   }
 
   componentDidMount() {
-    if (!Cookies.get("token")) {
-      
+    if (!this.token) {
+      console.log('Trigger dont have token');
       return this.props.history.push("/login");
     }
-    
-
   }
 
   loading = () => (

@@ -1,0 +1,6 @@
+{
+    "name": "resumeform",
+    "version": "0.0.0",
+    "private": true,
+    "main": "./ResumeForm.js"
+}
