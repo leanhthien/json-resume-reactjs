@@ -25,14 +25,13 @@ class ShareResume extends Component {
 
   async componentDidMount() {
 
-    await new API().getBaseURLFromHeroku();
+    // await new API().getBaseURLFromHeroku();
 
-    this.setState({apiBaseUrl: Cookies.get("baseURL")});
+    // this.setState({apiBaseUrl: Cookies.get("baseURL")});
 
     let data = await this.getDetailResume();
 
     if (data) {
-      console.log("Set data...");
       this.setState({
         resume: {
           name: data.name,
@@ -46,6 +45,7 @@ class ShareResume extends Component {
         }
       });
     }
+    
   }
 
   async getDetailResume() {
@@ -71,6 +71,7 @@ class ShareResume extends Component {
 
     return (
       <div id="resumeDetailContainer" className="page container-fluid">
+
         <div className="row main clearfix">
           <a className="js-floating-nav-trigger floating-nav-trigger" href="#">
             <i className="icon-bars"></i>
@@ -132,7 +133,7 @@ class ShareResume extends Component {
                     <i className="icon fs-lg icon-mail"></i>
                   </span>
                   <span className="info">
-                    <a className="link-disguise" href="#" itemProp="email">
+                    <a className="link-disguise" href={resume.email} itemProp="email">
                       {resume.email}
                     </a>
                   </span>
@@ -142,7 +143,7 @@ class ShareResume extends Component {
                     <i className="icon fs-lg icon-link"></i>
                   </span>
                   <span className="info">
-                    <a href="" target="_blank">
+                    <a href={resume.website} target="_blank">
                         {resume.website}
                     </a>
                   </span>

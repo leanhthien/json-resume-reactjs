@@ -65,9 +65,9 @@ class Register extends Component {
 
     this.setState({
       formErrors: {
-        username: usernameValid ? "" : " Invalid username",
+        username: usernameValid ? "" : "Invalid username. Username can only contain character(s), number(s) or underscore(s)",
         password: passwordValid ? "" : "Password at least 6 characters",
-        retypePassword: retypePasswordValid ? "" : "Do not match, please re-enter"
+        retypePassword: retypePasswordValid ? "" : "Do not match password, please re-enter"
       }
     });
 
@@ -152,7 +152,7 @@ class Register extends Component {
           <label
             id="password-error"
             style={{ color: "red" }}
-            className="error form-group text-center"
+            className="error form-group"
           >
             {formErrors.password}
           </label>
@@ -165,7 +165,7 @@ class Register extends Component {
           <label
             id="retypePassword-error"
             style={{ color: "red" }}
-            className="error form-group text-center"
+            className="error form-group"
           >
             {formErrors.retypePassword}
           </label>

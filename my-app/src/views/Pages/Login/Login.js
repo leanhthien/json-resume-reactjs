@@ -42,15 +42,13 @@ class Login extends Component {
   }
 
   validateField() {
-    let usernameValid = this.state.username.match(
-      /^[A-Za-z0-9]+(?:[ _-][A-Za-z0-9]+)*$/
-    );;
-    let passwordValid = this.state.password.length >= 3;
+    let usernameValid = this.state.username.length >= 1;
+    let passwordValid = this.state.password.length >= 1;
 
     this.setState({
       formErrors: {
-        username: usernameValid ? "" : "Invalid username",
-        password: passwordValid ? "" : "Password at least 6 characters"
+        username: usernameValid ? "" : "Username cannot be empty",
+        password: passwordValid ? "" : "Password cannot be empty"
       }
     });
 

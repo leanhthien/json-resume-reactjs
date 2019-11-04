@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import API from "../../api";
-import { store } from "react-notifications-component";
 
 class Detail extends Component {
   constructor(props) {
@@ -64,39 +63,10 @@ class Detail extends Component {
       if (response.data.data) {
         return response.data.data;
       } else {
-        store.addNotification({
-          title: "Error!",
-          message: "Cannot get data!",
-          type: "danger",
-          insert: "top",
-          container: "top-right",
-          animationIn: ["animated", "fadeIn"],
-          animationOut: ["animated", "fadeOut"],
-          dismiss: {
-            duration: 5000,
-            onScreen: false
-          }
-        });
-        return null;
+        new API().showError(null, "Cannot get data!");
       }
     } catch (error) {
-      let message = error.response.data.data
-        ? error.response.data.data
-        : "Cannot get data";
-
-      store.addNotification({
-        title: "Error!",
-        message: message,
-        type: "danger",
-        insert: "top",
-        container: "top-right",
-        animationIn: ["animated", "fadeIn"],
-        animationOut: ["animated", "fadeOut"],
-        dismiss: {
-          duration: 5000,
-          onScreen: false
-        }
-      });
+      new API().showError(error, "Cannot get data!");
     }
   }
 
