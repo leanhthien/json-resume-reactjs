@@ -2,13 +2,16 @@ import React, { Component } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import API from "../../api";
+import { store } from "react-notifications-component";
 
 class Dashboard extends Component {
   constructor(props) {
     super(props);
     this.state = {
       resumes: [],
-      shareLink: ""
+      shareLink: "",
+      err: false,
+      msg: ""
     };
     this.apiBaseUrl = process.env.REACT_APP_BASE_URL;
     this.token = Cookies.get("token");
@@ -29,18 +32,11 @@ class Dashboard extends Component {
       });
 
     let data = await this.getUserResume();
+
     this.setState({ resumes: data });
     this.setState({
       shareLink: `${window.location.origin}/share-resume/${this.username}`
     });
-  }
-
-  async checkPermission() {
-    try {
-      await axios.get(`${this.apiBaseUrl}token`, this.authorization);
-    } catch (error) {
-      this.props.history.push("/login");
-    }
   }
 
   async getUserResume() {
@@ -52,9 +48,39 @@ class Dashboard extends Component {
       if (response.data.data) {
         return response.data.data;
       } else {
+        store.addNotification({
+          title: "Error!",
+          message: "Cannot get data!",
+          type: "danger",
+          insert: "top",
+          container: "top-right",
+          animationIn: ["animated", "fadeIn"],
+          animationOut: ["animated", "fadeOut"],
+          dismiss: {
+            duration: 5000,
+            onScreen: false
+          }
+        });
         return null;
       }
     } catch (error) {
+      let message = error.response.data.data
+        ? error.response
+        : error.response.data.data;
+
+      store.addNotification({
+        title: "Error!",
+        message: error.response.data.data,
+        type: "danger",
+        insert: "top",
+        container: "top-right",
+        animationIn: ["animated", "fadeIn"],
+        animationOut: ["animated", "fadeOut"],
+        dismiss: {
+          duration: 5000,
+          onScreen: false
+        }
+      });
       return null;
     }
   }
@@ -97,7 +123,9 @@ class Dashboard extends Component {
 
     this.state.resumes.forEach((element, index) => {
       if (element.enabled) {
-        enableStar = <p>Star</p>;
+        enableStar = (
+          <i className="fa fa-star" style={{ color: "#16a2b8" }}></i>
+        );
         enableTop = "";
       } else {
         enableStar = "";
@@ -198,12 +226,12 @@ class Dashboard extends Component {
       );
 
       if (response.data.data) {
-        return response.data.data;
+        this.showUserResume();
       } else {
-        return null;
+        this.setState({ error: true, msg: "Cannot enable product!" });
       }
     } catch (error) {
-      return null;
+      this.setState({ error: true, msg: "Cannot enable product!" });
     }
   }
 
@@ -220,12 +248,12 @@ class Dashboard extends Component {
       );
 
       if (response.data.data) {
-        return response.data.data;
+        this.showUserResume();
       } else {
-        return null;
+        this.setState({ error: true, msg: "Cannot delete product!" });
       }
     } catch (error) {
-      return null;
+      this.setState({ error: true, msg: "Cannot delete product!" });
     }
   }
 
@@ -235,7 +263,7 @@ class Dashboard extends Component {
   }
 
   renderErrorLoadUser() {
-    if (this.state.err) {
+    if (this.state.error) {
       return (
         <div className="container alert alert-danger">
           <button
@@ -307,6 +335,7 @@ class Dashboard extends Component {
           </div>
 
           {this.genResumeTable()}
+          {this.renderErrorLoadUser()}
 
           <button
             type="button"
@@ -315,6 +344,8 @@ class Dashboard extends Component {
           >
             Create resume
           </button>
+
+          {this.renderErrorLoadUser()}
         </div>
       </div>
     );

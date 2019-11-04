@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import "./Register.css";
+import API from "../../../api";
 
 class Register extends Component {
   constructor(props) {
@@ -56,7 +57,9 @@ class Register extends Component {
   }
 
   validateField() {
-    let usernameValid = this.state.username.length >= 3;
+    let usernameValid = this.state.username.match(
+      /^[A-Za-z0-9]+(?:[ _-][A-Za-z0-9]+)*$/
+    );
     let passwordValid = this.state.password.length >= 6;
     let retypePasswordValid = this.state.password === this.state.retypePassword;
 
@@ -64,9 +67,7 @@ class Register extends Component {
       formErrors: {
         username: usernameValid ? "" : " Invalid username",
         password: passwordValid ? "" : "Password at least 6 characters",
-        retypePassword: retypePasswordValid
-          ? ""
-          : "Do not match, please re-enter"
+        retypePassword: retypePasswordValid ? "" : "Do not match, please re-enter"
       }
     });
 
@@ -76,9 +77,7 @@ class Register extends Component {
   async handleClick(event) {
     event.preventDefault();
 
-    let isValid = this.validateField();
-
-    if (isValid === true) {
+    if (this.validateField()) {
       let params = new URLSearchParams();
       params.append("username", this.state.username);
       params.append("password", this.state.password);
@@ -97,8 +96,9 @@ class Register extends Component {
           }
         })
         .catch(error => {
+          let message = (error.response.data.data) ? error.response.data.data : "Cannot get register!";
           this.setState({
-            resForm: { hasError: true, msg: error.response.data.data }
+            resForm: { hasError: true, msg: message }
           });
         });
     }
@@ -135,35 +135,41 @@ class Register extends Component {
     let errUsername, errPassword, errRetypePassword;
     if (formErrors.username) {
       errUsername = (
-        <label
-          id="username-error"
-          style={{ color: "red" }}
-          className="error form-group text-center"
-        >
-          {formErrors.username}
-        </label>
+        <div className="text-center">
+          <label
+            id="username-error"
+            style={{ color: "red" }}
+            className="error form-group"
+          >
+            {formErrors.username}
+          </label>
+        </div>
       );
     }
     if (formErrors.password) {
       errPassword = (
-        <label
-          id="password-error"
-          style={{ color: "red" }}
-          className="error form-group text-center"
-        >
-          {formErrors.password}
-        </label>
+        <div className="text-center">
+          <label
+            id="password-error"
+            style={{ color: "red" }}
+            className="error form-group text-center"
+          >
+            {formErrors.password}
+          </label>
+        </div>
       );
     }
     if (formErrors.retypePassword) {
       errRetypePassword = (
-        <label
-          id="retypePassword-error"
-          style={{ color: "red" }}
-          className="error form-group text-center"
-        >
-          {formErrors.retypePassword}
-        </label>
+        <div className="text-center">
+          <label
+            id="retypePassword-error"
+            style={{ color: "red" }}
+            className="error form-group text-center"
+          >
+            {formErrors.retypePassword}
+          </label>
+        </div>
       );
     }
 

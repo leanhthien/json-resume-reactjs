@@ -1,6 +1,7 @@
 import React, { Component } from "react";
-import "../../Detail/Detail.css";
 import axios from "axios";
+import Cookies from "js-cookie";
+import API from "../../../api";
 
 class ShareResume extends Component {
   constructor(props) {
@@ -23,19 +24,28 @@ class ShareResume extends Component {
   }
 
   async componentDidMount() {
+
+    await new API().getBaseURLFromHeroku();
+
+    this.setState({apiBaseUrl: Cookies.get("baseURL")});
+
     let data = await this.getDetailResume();
-    this.setState({
-      resume: {
-        name: data.name,
-        jobTitle: data.jobTitle,
-        telephone: data.telephone,
-        address: data.address,
-        email: data.email,
-        language: data.language,
-        about: data.about,
-        workExperience: data.workExperience
-      }
-    });
+
+    if (data) {
+      console.log("Set data...");
+      this.setState({
+        resume: {
+          name: data.name,
+          jobTitle: data.jobTitle,
+          telephone: data.telephone,
+          address: data.address,
+          email: data.email,
+          language: data.language,
+          about: data.about,
+          workExperience: data.workExperience
+        }
+      });
+    }
   }
 
   async getDetailResume() {
@@ -47,9 +57,11 @@ class ShareResume extends Component {
       if (response.data.data) {
         return response.data.data;
       } else {
+        this.props.history.push("/404");
         return null;
       }
     } catch (error) {
+      this.props.history.push("/404");
       return null;
     }
   }

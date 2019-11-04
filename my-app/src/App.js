@@ -2,7 +2,11 @@ import React, { Component } from 'react';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 import Loadable from 'react-loadable';
 import 'bootstrap/dist/css/bootstrap.css';
+import "./views/Detail/Detail.css";
 import './App.css';
+import API from './api';
+import ReactNotification from 'react-notifications-component';
+import 'react-notifications-component/dist/theme.css';
 
 
 const loadingComponent = ({isLoading, error}) => {
@@ -48,9 +52,14 @@ const Page404 = Loadable({
 
 class App extends Component {
 
+  async componentDidMount() {
+    await new API().getBaseURLFromHeroku();
+  }
+
   render() {
     return (
       <BrowserRouter>
+      <ReactNotification />
             <Switch>
               <Route exact path="/share-resume/:name" name="Share Page" component={ShareResume} />
               <Route exact path="/register" name="Register Page" component={Register} />

@@ -1,5 +1,5 @@
 import React, { Component, Suspense } from "react";
-import { Redirect, Route, Switch } from "react-router-dom";
+import { Redirect, Route, Switch, Link } from "react-router-dom";
 import { Container } from "reactstrap";
 import Cookies from "js-cookie";
 
@@ -11,12 +11,10 @@ class DefaultLayout extends Component {
     this.apiBaseUrl = process.env.REACT_APP_BASE_URL;
     this.token = Cookies.get("token");
     this.username = Cookies.get("username");
-    
   }
 
   componentDidMount() {
     if (!this.token) {
-      console.log('Trigger dont have token');
       return this.props.history.push("/login");
     }
   }
@@ -25,47 +23,68 @@ class DefaultLayout extends Component {
     <div className="animated fadeIn pt-1 text-center">Loading...</div>
   );
 
+  setupNav() {
+    let guest = (
+      <ul className="navbar-nav">
+        <li className="nav-item">
+          <Link to={"/register"} className="nav-link">
+            Register
+          </Link>
+        </li>
+        <li className="nav-item">
+          <Link to={"/login"} className="nav-link">
+            Login
+          </Link>
+        </li>
+      </ul>
+    );
+    let user = (
+      <ul className="navbar-nav">
+        <li className="nav-item">
+          <Link to={"/dashboard"} className="nav-link">
+            {this.username}
+          </Link>
+        </li>
+        <li className="nav-item">
+          <Link to={"/resume/new"} className="nav-link">
+            Create resume
+          </Link>
+        </li>
+        <li className="nav-item">
+          <Link
+            to={"/"}
+            onClick={(e) => this.logoutClick(e)}
+            className="nav-link"
+          >
+            Logout
+          </Link>
+        </li>
+      </ul>
+    );
+
+    return (this.token) ? user : guest;
+  }
+
+  logoutClick = (e) => {
+    e.preventDefault();
+    Cookies.remove("token");
+    Cookies.remove("username");
+    Cookies.remove("userId");
+    console.log("Trigger logout");
+    this.props.history.push(`/login`);
+  }
+
   render() {
     return (
       <div>
         <main className="main">
           <nav className="navbar navbar-expand-lg navbar-light bg-light fixed-top">
-            <a className="navbar-brand" href="/">
+            <Link to={"/"} className="navbar-brand">
               Json Resume
-            </a>
-            <ul className="navbar-nav mr-auto"></ul>
-            <ul className="navbar-nav">
-              <li className="nav-item">
-                <a className="nav-link guestNavigation" href="/regiter">
-                  Sign up
-                </a>
-              </li>
-              <li className="nav-item">
-                <a className="nav-link guestNavigation" href="/login">
-                  Sign in
-                </a>
-              </li>
-              <li className="nav-item">
-                <a
-                  id="usernameNavigation"
-                  className="nav-link userNavigation"
-                  href="/dashboard"
-                >
-                  {this.username}
-                </a>
-              </li>
-              <li className="nav-item">
-                <a className="nav-link userNavigation" href="/">
-                  Create resume
-                </a>
-              </li>
-              <li className="nav-item">
-                <a className="nav-link userNavigation" href="">
-                  Log out
-                </a>
+            </Link>
 
-              </li>
-            </ul>
+            <ul className="navbar-nav mr-auto"></ul>
+            {this.setupNav()}
           </nav>
 
           <Container fluid>
@@ -86,6 +105,7 @@ class DefaultLayout extends Component {
               </Switch>
             </Suspense>
           </Container>
+          
         </main>
       </div>
     );

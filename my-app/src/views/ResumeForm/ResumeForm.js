@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import API from "../../api";
+import { store } from 'react-notifications-component';
 
 class ResumeForm extends Component {
   constructor(props) {
@@ -64,48 +65,104 @@ class ResumeForm extends Component {
       if (response.data.data) {
         return response.data.data;
       } else {
+        console.log("Error !");
         return null;
       }
     } catch (error) {
+      store.addNotification({
+        title: "Error!",
+        message: "Cannot get data!",
+        type: "danger",
+        insert: "top",
+        container: "top-right",
+        animationIn: ["animated", "fadeIn"],
+        animationOut: ["animated", "fadeOut"],
+        dismiss: {
+          duration: 5000,
+          onScreen: false
+        }
+      });
       return null;
     }
   }
 
   async submitClick(event) {
     event.preventDefault();
-    let request;
-    if (this.id) {
-      request = "edit";
-    } else {
-      request = "new";
-    }
 
-    try {
-      let params = {
-          productId: this.id,
-          name: this.state.name,
-          jobTitle: this.state.jobTitle,
-          telephone: this.state.telephone,
-          address: this.state.address,
-          email: this.state.email,
-          website: this.state.website,
-          language: this.state.language,
-          about: this.state.about,
-          workExperience: this.state.workExperience
-      };
+    let request = (this.id) ? "edit" : "new";
 
-      let response = await axios.post(
-        `${this.apiBaseUrl}product/${request}?username=${this.username}`,
-        params
-      );
+    if (this.state.name && this.state.jobTitle) {
+      try {
+        let params = {
+            productId: this.id,
+            name: this.state.name,
+            jobTitle: this.state.jobTitle,
+            telephone: this.state.telephone,
+            address: this.state.address,
+            email: this.state.email,
+            website: this.state.website,
+            language: this.state.language,
+            about: this.state.about,
+            workExperience: this.state.workExperience
+        };
+  
+        let response = await axios.post(
+          `${this.apiBaseUrl}product/${request}?username=${this.username}`,
+          params
+        );
+  
+        if (response.data.data) {
+          this.props.history.push(`/resume/detail/${response.data.data.productId}`);
+        } else {
+          store.addNotification({
+            title: "Error!",
+            message: "Cannot get data!",
+            type: "danger",
+            insert: "top",
+            container: "top-right",
+            animationIn: ["animated", "fadeIn"],
+            animationOut: ["animated", "fadeOut"],
+            dismiss: {
+              duration: 5000,
+              onScreen: false
+            }
+          });
+          return null;
+        }
+      } catch (error) {
 
-      if (response.data.data) {
-        this.props.history.push(`/resume/detail/${response.data.data.productId}`);
-      } else {
+        let message = (error.response.data.data) ? error.response.data.data : "Cannot get data" ;
+
+        store.addNotification({
+          title: "Error!",
+          message: message,
+          type: "danger",
+          insert: "top",
+          container: "top-right",
+          animationIn: ["animated", "fadeIn"],
+          animationOut: ["animated", "fadeOut"],
+          dismiss: {
+            duration: 5000,
+            onScreen: false
+          }
+        });
         return null;
       }
-    } catch (error) {
-      return null;
+    }
+    else {
+      store.addNotification({
+        title: "Error!",
+        message: "Name and Job Title cannot be empty!",
+        type: "danger",
+        insert: "top",
+        container: "top-right",
+        animationIn: ["animated", "fadeIn"],
+        animationOut: ["animated", "fadeOut"],
+        dismiss: {
+          duration: 5000,
+          onScreen: false
+        }
+      });
     }
   }
 

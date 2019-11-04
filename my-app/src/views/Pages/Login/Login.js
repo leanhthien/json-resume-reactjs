@@ -2,14 +2,15 @@ import React, { Component } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import "./Login.css";
+import API from "../../../api";
 
 class Login extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      username: '',
-      password: '',
-      formErrors: { username: '', password: '' },
+      username: "",
+      password: "",
+      formErrors: { username: "", password: "" },
       errLogin: false,
       msg: ""
     };
@@ -17,7 +18,6 @@ class Login extends Component {
   }
 
   async componentDidMount() {
-
     if (Cookies.get("token")) {
       this.token = Cookies.get("token");
       await axios
@@ -42,14 +42,16 @@ class Login extends Component {
   }
 
   validateField() {
-    
-    let usernameValid = this.state.username.length >= 3;
-    let passwordValid = this.state.password.length >= 6;
-    
+    let usernameValid = this.state.username.match(
+      /^[A-Za-z0-9]+(?:[ _-][A-Za-z0-9]+)*$/
+    );;
+    let passwordValid = this.state.password.length >= 3;
+
     this.setState({
-      formErrors: { 
-        username: usernameValid ? "" : " Invalid username", 
-        password: passwordValid ? "" : "Password at least 6 characters" }
+      formErrors: {
+        username: usernameValid ? "" : "Invalid username",
+        password: passwordValid ? "" : "Password at least 6 characters"
+      }
     });
 
     return usernameValid && passwordValid;
@@ -58,15 +60,11 @@ class Login extends Component {
   async handleClick(event) {
     event.preventDefault();
 
-    // let isValid = this.validateField();
-    let isValid = true;
-
-    if(isValid === true) {
-    
+    if (this.validateField()) {
       let params = new URLSearchParams();
-          params.append('username', this.state.username);
-          params.append('password', this.state.password);
-  
+      params.append("username", this.state.username);
+      params.append("password", this.state.password);
+
       await axios
         .post(`${this.apiBaseUrl}login`, params)
         .then(response => {
@@ -75,17 +73,15 @@ class Login extends Component {
             Cookies.set("userId", response.data.data.appUser.userId);
             Cookies.set("username", response.data.data.appUser.userName);
             this.props.history.push("/dashboard");
-          }
-          catch(error) {
+          } catch (error) {
             this.setState({ errLogin: true, msg: error });
           }
-          
         })
         .catch(error => {
-          this.setState({ errLogin: true, msg: error.response.data.data });
+          let message = (error.response.data.data) ? error.response.data.data : "Cannot get login!";
+          this.setState({ errLogin: true, msg: message });
         });
     }
-
   }
 
   registerClick(event) {
@@ -118,24 +114,28 @@ class Login extends Component {
     let errUsername, errPassword;
     if (formErrors.username) {
       errUsername = (
-        <label
-          id="username-error"
-          style={{ color: "red"}}
-          className="error form-group text-center"
-        >
-          {formErrors.username}
-        </label>
+        <div className="text-center">
+          <label
+            id="username-error"
+            style={{ color: "red" }}
+            className="error form-group"
+          >
+            {formErrors.username}
+          </label>
+        </div>
       );
     }
     if (formErrors.password) {
       errPassword = (
-        <label
-          id="password-error"
-          style={{ color: "red"}}
-          className="error form-group text-center"
-        >
-          {formErrors.password}
-        </label>
+        <div className="text-center">
+          <label
+            id="password-error"
+            style={{ color: "red" }}
+            className="error form-group"
+          >
+            {formErrors.password}
+          </label>
+        </div>
       );
     }
 
@@ -151,7 +151,6 @@ class Login extends Component {
           action="login"
           method="post"
         >
-          
           <div className="form-group d-flex justify-content-center">
             <label className="col-sm-1 control-label">Username:</label>
             <div className="col-sm-6">
@@ -165,7 +164,7 @@ class Login extends Component {
             </div>
           </div>
           {errUsername}
-          
+
           <div className="form-group d-flex justify-content-center">
             <label className="col-sm-1 control-label">Password:</label>
             <div className="col-sm-6">
@@ -181,7 +180,7 @@ class Login extends Component {
             </div>
           </div>
           {errPassword}
-          
+
           <div className="text-center">
             <button
               id="loginSubmit"
