@@ -19,12 +19,14 @@ class ResumeForm extends Component {
       workExperience: "",
       enabled: false
     };
-    this.apiBaseUrl = process.env.REACT_APP_BASE_URL;
+    // this.apiBaseUrl = process.env.REACT_APP_BASE_URL;
+    this.apiBaseUrl = Cookies.get("baseURL");
     this.token = Cookies.get("token");
     this.username = Cookies.get("username");
     this.id = this.props.match.params.id;
     this.authorization = {
       headers: {
+        "Content-Type": "application/json",
         Authorization: this.token
       }
     };
@@ -40,26 +42,37 @@ class ResumeForm extends Component {
 
     if (this.id) {
       let data = await this.getDetailResume();
-      await this.setState({
-        name: data.name,
-        jobTitle: data.jobTitle,
-        telephone: data.telephone,
-        address: data.address,
-        email: data.email,
-        website: data.website,
-        language: data.language,
-        about: data.about,
-        workExperience: data.workExperience,
-        enabled: data.enabled
-      });
+
+      if (data) {
+        await this.setState({
+          name: data.name,
+          jobTitle: data.jobTitle,
+          telephone: data.telephone,
+          address: data.address,
+          email: data.email,
+          website: data.website,
+          language: data.language,
+          about: data.about,
+          workExperience: data.workExperience,
+          enabled: data.enabled
+        });
+      }
     }
   }
 
   async getDetailResume() {
     try {
-      let response = await axios.get(
-        `${this.apiBaseUrl}product/detail?id=${this.id}`
-      );
+      let response = await axios({
+        url: "product/detail",
+        method: "GET",
+        baseURL: this.apiBaseUrl,
+        headers: {
+          Authorization: this.token
+        },
+        params: {
+          id: this.id
+        }
+      });
 
       if (response.data.data) {
         return response.data.data;
@@ -74,39 +87,48 @@ class ResumeForm extends Component {
   async submitClick(event) {
     event.preventDefault();
 
-    let request = (this.id) ? "edit" : "new";
+    let request = this.id ? "edit" : "new";
 
     if (this.state.name && this.state.jobTitle) {
       try {
-        let params = {
-            productId: this.id,
-            name: this.state.name,
-            jobTitle: this.state.jobTitle,
-            telephone: this.state.telephone,
-            address: this.state.address,
-            email: this.state.email,
-            website: this.state.website,
-            language: this.state.language,
-            about: this.state.about,
-            workExperience: this.state.workExperience
+        let body = {
+          productId: this.id,
+          name: this.state.name,
+          jobTitle: this.state.jobTitle,
+          telephone: this.state.telephone,
+          address: this.state.address,
+          email: this.state.email,
+          website: this.state.website,
+          language: this.state.language,
+          about: this.state.about,
+          workExperience: this.state.workExperience
         };
-  
-        let response = await axios.post(
-          `${this.apiBaseUrl}product/${request}?username=${this.username}`,
-          params
-        );
-  
+
+        let response = await axios({
+          url: `product/${request}`,
+          method: "POST",
+          baseURL: this.apiBaseUrl,
+          headers: {
+            Authorization: this.token
+          },
+          params: {
+            username: this.username
+          },
+          data: body
+        });
+
         if (response.data.data) {
-          this.props.history.push(`/resume/detail/${response.data.data.productId}`);
+          this.props.history.push(
+            `/resume/detail/${response.data.data.productId}`
+          );
         } else {
-          new API().showError(null, "Cannot get data!");
+          new API().showError(null, "Cannot get detail data!");
         }
       } catch (error) {
-        new API().showError(error, "Cannot get data!");
+        new API().showError(error, "Cannot submit resume!");
       }
-    }
-    else {
-      new API().showError(null, "Name and Job Title cannot be null!");
+    } else {
+      new API().showError(null, "Name and Job Title cannot be empty!");
     }
   }
 
@@ -163,11 +185,7 @@ class ResumeForm extends Component {
       <div id="resumeFormContainer" className="page">
         <h2 className="text-center">Resume Details</h2>
         <div>
-          <form
-            id="resumeForm"
-            className="form-horizontal"
-            method="post"
-          >
+          <form id="resumeForm" className="form-horizontal" method="post">
             <input type="hidden" name="productId" />
             <div className="form-group">
               <label className="col-sm-2 control-label">Name:</label>
@@ -280,27 +298,25 @@ class ResumeForm extends Component {
                 ></textarea>
               </div>
             </div>
-
-            
           </form>
 
           <div className="text-center">
-              <button
-                id="buttonResumeForm"
-                type="submit"
-                className="btn btn-info"
-                onClick={event => this.submitClick(event)}
-              >
-                Submit
-              </button>
-              <button
-                id="buttonResumeForm"
-                className="btn btn-danger"
-                onClick={this.props.history.goBack}
-              >
-                Back
-              </button>
-            </div>
+            <button
+              id="buttonResumeForm"
+              type="submit"
+              className="btn btn-info"
+              onClick={event => this.submitClick(event)}
+            >
+              Submit
+            </button>
+            <button
+              id="buttonResumeForm"
+              className="btn btn-danger"
+              onClick={this.props.history.goBack}
+            >
+              Back
+            </button>
+          </div>
         </div>
       </div>
     );

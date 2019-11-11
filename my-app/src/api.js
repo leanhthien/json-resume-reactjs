@@ -4,78 +4,78 @@ import Cookies from "js-cookie";
 import { store } from "react-notifications-component";
 
 class API extends Component {
+
   async getBaseURLFromHeroku() {
-    try {
-      let response = await axios.get(
-        `https://api.heroku.com/apps/json-resume-reactjs/config-vars`,
-        {
-          headers: {
-            Accept: "application/vnd.heroku+json; version=3",
-            Authorization: "Bearer 51f661c8-37f8-4d57-a532-83ec9ac9f41a"
-          }
+    await axios
+      .get(`https://api.heroku.com/apps/json-resume-reactjs/config-vars`, {
+        headers: {
+          Accept: "application/vnd.heroku+json; version=3",
+          Authorization: "Bearer 51f661c8-37f8-4d57-a532-83ec9ac9f41a"
         }
-      );
+      })
+      .then(response => {
 
-      if (response.data) {
         Cookies.set("baseURL", response.data.BASE_URL);
-      }
-    } catch (error) {
-      let message = error.response.data.data
-        ? error.response.data.data
-        : "Cannot get base URL!";
-
-      store.addNotification({
-        title: "Error!",
-        message: message,
-        type: "danger",
-        insert: "top",
-        container: "top-right",
-        animationIn: ["animated", "fadeIn"],
-        animationOut: ["animated", "fadeOut"],
-        dismiss: {
-          duration: 5000,
-          onScreen: false
-        }
+      })
+      .catch(error => {
+        this.showError(error, "Cannot get base URL!");
       });
-    }
   }
 
   async checkPermission(apiBaseUrl, authorization) {
     try {
       await axios.get(`${apiBaseUrl}token`, {
         headers: {
+          "Content-Type": "application/json",
           Authorization: authorization
         }
       });
     } catch (error) {
-      let message = error.response.data.data
-        ? error.response.data.data
-        : "Cannot validate!";
-
-      store.addNotification({
-        title: "Error!",
-        message: message,
-        type: "danger",
-        insert: "top",
-        container: "top-right",
-        animationIn: ["animated", "fadeIn"],
-        animationOut: ["animated", "fadeOut"],
-        dismiss: {
-          duration: 5000,
-          onScreen: false
-        }
-      });
+      this.showError(error, "Cannot validate token!");
     }
   }
 
-  showError(error, defaultMessage) {
+  /*
+   * API show detail of share resume
+   */
 
-    let message;
-
-    if (error && error.response  && error.response.data && error.response.data.data) {
-      message = error.response.data.data
+  async getDetailShareResume(apiBaseUrl, name) {
+    try {
+      await axios({
+        url: "view",
+        method: "GET",
+        baseURL: apiBaseUrl,
+        params: {
+          name: name
+        }
+      })
+      .then(response => {
+        console.log('Result: ' + response.data.data);
+        return response.data.data;
+      })
+      .catch(error => {
+        this.showError(error, "Cannot get share resume!");
+      });
+    } catch (error) {
+      this.showError(error, "Cannot get share resume!");
     }
-    else {
+  }
+
+  /*
+   * Feature show error popup
+   */
+
+  showError(error, defaultMessage) {
+    let message;
+    console.log("Error - " + error);
+    if (
+      error &&
+      error.response &&
+      error.response.data &&
+      error.response.data.data
+    ) {
+      message = error.response.data.data;
+    } else {
       message = defaultMessage;
     }
 

@@ -2,8 +2,16 @@ import React, { Component, Suspense } from "react";
 import { Redirect, Route, Switch, Link } from "react-router-dom";
 import { Container } from "reactstrap";
 import Cookies from "js-cookie";
-
 import routes from "../../routes";
+
+const findRouteName = (url, routes) => {
+  let title = "Json Resume";
+  routes.find(item => {
+    if (url.includes(item.path)) title = item.name;
+  });
+
+  return title;
+};
 
 class DefaultLayout extends Component {
   constructor(props) {
@@ -22,6 +30,19 @@ class DefaultLayout extends Component {
   loading = () => (
     <div className="animated fadeIn pt-1 text-center">Loading...</div>
   );
+
+  setupNavTitle = () => {
+    const routeName = findRouteName(this.props.location.pathname, routes);
+    console.log("routeName: " + routeName);
+    if (routeName) {
+      return (
+        <Link to={"/"} className="navbar-brand">
+          {routeName}
+        </Link>
+      );
+    }
+    return null;
+  };
 
   setupNav() {
     let guest = (
@@ -53,7 +74,7 @@ class DefaultLayout extends Component {
         <li className="nav-item">
           <Link
             to={"/"}
-            onClick={(e) => this.logoutClick(e)}
+            onClick={e => this.logoutClick(e)}
             className="nav-link"
           >
             Logout
@@ -62,26 +83,24 @@ class DefaultLayout extends Component {
       </ul>
     );
 
-    return (this.token) ? user : guest;
+    return this.token ? user : guest;
   }
 
-  logoutClick = (e) => {
+  logoutClick = e => {
     e.preventDefault();
     Cookies.remove("token");
     Cookies.remove("username");
     Cookies.remove("userId");
     console.log("Trigger logout");
     this.props.history.push(`/login`);
-  }
+  };
 
   render() {
     return (
       <div>
         <main className="main">
           <nav className="navbar navbar-expand-lg navbar-light bg-light fixed-top">
-            <Link to={"/"} className="navbar-brand">
-              Json Resume
-            </Link>
+            <Route render={props => this.setupNavTitle()} />
 
             <ul className="navbar-nav mr-auto"></ul>
             {this.setupNav()}
@@ -105,7 +124,6 @@ class DefaultLayout extends Component {
               </Switch>
             </Suspense>
           </Container>
-          
         </main>
       </div>
     );

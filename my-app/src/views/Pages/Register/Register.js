@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
-import "./Register.css";
 import API from "../../../api";
 
 class Register extends Component {
@@ -23,10 +22,16 @@ class Register extends Component {
       errLogin: false,
       msg: ""
     };
-    this.apiBaseUrl = process.env.REACT_APP_BASE_URL;
+    // this.apiBaseUrl = process.env.REACT_APP_BASE_URL;
+    this.apiBaseUrl = '';
   }
 
   async componentDidMount() {
+
+    await new API().getBaseURLFromHeroku().then(() => {
+      this.apiBaseUrl = Cookies.get("baseURL");
+    });
+
     if (Cookies.get("token")) {
       this.token = Cookies.get("token");
       await axios
@@ -78,7 +83,8 @@ class Register extends Component {
     event.preventDefault();
 
     if (this.validateField()) {
-      let params = new URLSearchParams();
+      if(this.apiBaseUrl) {
+        let params = new URLSearchParams();
       params.append("username", this.state.username);
       params.append("password", this.state.password);
       params.append("retypePassword", this.state.password);
@@ -101,6 +107,10 @@ class Register extends Component {
             resForm: { hasError: true, msg: message }
           });
         });
+      }
+      else {
+        new API().showError(null, "Server is not ready!");
+      }
     }
   }
 
@@ -197,6 +207,7 @@ class Register extends Component {
             </div>
           </div>
           {errUsername}
+
           <div className="form-group d-flex justify-content-center">
             <label className="col-sm-1 control-label">Password:</label>
             <div className="col-sm-6">
@@ -210,6 +221,7 @@ class Register extends Component {
             </div>
           </div>
           {errPassword}
+          
           <div className="form-group d-flex justify-content-center">
             <label className="col-sm-1 control-label">Retype Password:</label>
             <div className="col-sm-6">

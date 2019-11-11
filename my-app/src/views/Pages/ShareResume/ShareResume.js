@@ -19,50 +19,50 @@ class ShareResume extends Component {
         workExperience: ""
       }
     };
-    this.apiBaseUrl = process.env.REACT_APP_BASE_URL;
+    this.apiBaseUrl = "";
     this.name = this.props.match.params.name;
   }
 
   async componentDidMount() {
-
-    // await new API().getBaseURLFromHeroku();
-
-    // this.setState({apiBaseUrl: Cookies.get("baseURL")});
-
-    let data = await this.getDetailResume();
-
-    if (data) {
-      this.setState({
-        resume: {
-          name: data.name,
-          jobTitle: data.jobTitle,
-          telephone: data.telephone,
-          address: data.address,
-          email: data.email,
-          language: data.language,
-          about: data.about,
-          workExperience: data.workExperience
-        }
-      });
-    }
-    
+    await new API().getBaseURLFromHeroku().then(() => {
+      this.apiBaseUrl = Cookies.get("baseURL");
+      this.getDetailResume();
+    });
   }
 
   async getDetailResume() {
+    // let response = await new API().getDetailShareResume(this.apiBaseUrl, this.name);
+
+    // console.log('Response: ' + response);
+
     try {
-      let response = await axios.get(
-        `${this.apiBaseUrl}view?name=${this.name}`
-      );
+      let response = await axios({
+        url: "view",
+        method: "GET",
+        baseURL: this.apiBaseUrl,
+        params: {
+          name: this.name
+        }
+      });
 
       if (response.data.data) {
-        return response.data.data;
+        this.setState({
+          resume: {
+            name: response.data.data.name,
+            jobTitle: response.data.data.jobTitle,
+            telephone: response.data.data.telephone,
+            address: response.data.data.address,
+            email: response.data.data.email,
+            language: response.data.data.language,
+            about: response.data.data.about,
+            workExperience: response.data.data.workExperience
+          }
+        });
       } else {
         this.props.history.push("/404");
-        return null;
       }
     } catch (error) {
       this.props.history.push("/404");
-      return null;
     }
   }
 
@@ -71,7 +71,6 @@ class ShareResume extends Component {
 
     return (
       <div id="resumeDetailContainer" className="page container-fluid">
-
         <div className="row main clearfix">
           <a className="js-floating-nav-trigger floating-nav-trigger" href="#">
             <i className="icon-bars"></i>
@@ -133,7 +132,11 @@ class ShareResume extends Component {
                     <i className="icon fs-lg icon-mail"></i>
                   </span>
                   <span className="info">
-                    <a className="link-disguise" href={resume.email} itemProp="email">
+                    <a
+                      className="link-disguise"
+                      href={resume.email}
+                      itemProp="email"
+                    >
                       {resume.email}
                     </a>
                   </span>
@@ -143,8 +146,12 @@ class ShareResume extends Component {
                     <i className="icon fs-lg icon-link"></i>
                   </span>
                   <span className="info">
-                    <a href={resume.website} target="_blank">
-                        {resume.website}
+                    <a
+                      href={resume.website}
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
+                      {resume.website}
                     </a>
                   </span>
                 </div>

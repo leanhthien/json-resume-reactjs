@@ -20,7 +20,8 @@
     "react-notifications-component": "^2.1.0",
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.2.0",
-    "reactstrap": "^8.1.1"
+    "reactstrap": "^8.1.1",
+    "url-pattern": "^1.0.3"
   },
   "scripts": {
     "start": "REACT_APP_BASE_URL='http://127.0.0.1:8080/my-app/api/' react-scripts start",

@@ -19,12 +19,14 @@ class Detail extends Component {
         workExperience: ""
       }
     };
-    this.apiBaseUrl = process.env.REACT_APP_BASE_URL;
+    // this.apiBaseUrl = process.env.REACT_APP_BASE_URL;
+    this.apiBaseUrl = Cookies.get("baseURL");
     this.token = Cookies.get("token");
     this.username = Cookies.get("username");
     this.id = this.props.match.params.id;
     this.authorization = {
       headers: {
+        "Content-Type": "application/json",
         Authorization: this.token
       }
     };
@@ -39,6 +41,7 @@ class Detail extends Component {
       });
 
     let data = await this.getDetailResume();
+
     this.setState({
       resume: {
         name: data.name,
@@ -56,9 +59,17 @@ class Detail extends Component {
 
   async getDetailResume() {
     try {
-      let response = await axios.get(
-        `${this.apiBaseUrl}product/detail?id=${this.id}`
-      );
+      let response = await axios({
+        url: "product/detail",
+        method: "GET",
+        baseURL: this.apiBaseUrl,
+        headers: {
+          Authorization: this.token
+        },
+        params: {
+          id: this.id
+        }
+      });
 
       if (response.data.data) {
         return response.data.data;

@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
-import "./Login.css";
 import API from "../../../api";
 
 class Login extends Component {
@@ -14,10 +13,16 @@ class Login extends Component {
       errLogin: false,
       msg: ""
     };
-    this.apiBaseUrl = process.env.REACT_APP_BASE_URL;
+    // this.apiBaseUrl = process.env.REACT_APP_BASE_URL;
+    this.apiBaseUrl = '';
   }
 
   async componentDidMount() {
+
+    await new API().getBaseURLFromHeroku().then(() => {
+      this.apiBaseUrl = Cookies.get("baseURL");
+    });
+
     if (Cookies.get("token")) {
       this.token = Cookies.get("token");
       await axios
@@ -31,6 +36,7 @@ class Login extends Component {
           this.setState({ errLogin: true, msg: error.response.data.data });
         });
     }
+
   }
 
   onChangeUsername = e => {
@@ -59,26 +65,31 @@ class Login extends Component {
     event.preventDefault();
 
     if (this.validateField()) {
-      let params = new URLSearchParams();
-      params.append("username", this.state.username);
-      params.append("password", this.state.password);
-
-      await axios
-        .post(`${this.apiBaseUrl}login`, params)
-        .then(response => {
-          try {
-            Cookies.set("token", response.data.data.token);
-            Cookies.set("userId", response.data.data.appUser.userId);
-            Cookies.set("username", response.data.data.appUser.userName);
-            this.props.history.push("/dashboard");
-          } catch (error) {
-            this.setState({ errLogin: true, msg: error });
-          }
-        })
-        .catch(error => {
-          let message = (error.response.data.data) ? error.response.data.data : "Cannot get login!";
-          this.setState({ errLogin: true, msg: message });
-        });
+      if (this.apiBaseUrl) {
+        let params = new URLSearchParams();
+        params.append("username", this.state.username);
+        params.append("password", this.state.password);
+  
+        await axios
+          .post(`${this.apiBaseUrl}login`, params)
+          .then(response => {
+            try {
+              Cookies.set("token", response.data.data.token);
+              Cookies.set("userId", response.data.data.appUser.userId);
+              Cookies.set("username", response.data.data.appUser.userName);
+              this.props.history.push("/dashboard");
+            } catch (error) {
+              this.setState({ errLogin: true, msg: error });
+            }
+          })
+          .catch(error => {
+            let message = (error.response.data.data) ? error.response.data.data : "Cannot get login!";
+            this.setState({ errLogin: true, msg: message });
+          });
+      }
+      else {
+        new API().showError(null, "Server is not ready! Please try later!");
+      }
     }
   }
 
@@ -113,6 +124,7 @@ class Login extends Component {
     if (formErrors.username) {
       errUsername = (
         <div className="text-center">
+          <div className="col-sm-1"></div>
           <label
             id="username-error"
             style={{ color: "red" }}
@@ -126,6 +138,7 @@ class Login extends Component {
     if (formErrors.password) {
       errPassword = (
         <div className="text-center">
+          <div className="col-sm-1"></div>
           <label
             id="password-error"
             style={{ color: "red" }}
@@ -166,7 +179,6 @@ class Login extends Component {
           <div className="form-group d-flex justify-content-center">
             <label className="col-sm-1 control-label">Password:</label>
             <div className="col-sm-6">
-              <i className="icon-user"></i>
               <input
                 type="password"
                 name="password"

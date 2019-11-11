@@ -12,24 +12,33 @@ class Dashboard extends Component {
       err: false,
       msg: ""
     };
-    this.apiBaseUrl = process.env.REACT_APP_BASE_URL;
+    // this.apiBaseUrl = process.env.REACT_APP_BASE_URL;
+    this.apiBaseUrl = Cookies.get("baseURL");
     this.token = Cookies.get("token");
     this.username = Cookies.get("username");
     this.authorization = {
       headers: {
+        "Content-Type": "application/json",
         Authorization: this.token
       }
     };
   }
 
   async componentDidMount() {
+
     await new API()
       .checkPermission(this.apiBaseUrl, this.token)
-      .then(response => {})
+      .then(response => {
+        
+      })
       .catch(error => {
         this.props.history.push("/login");
       });
 
+    this.showUserResume();
+  }
+
+  async showUserResume() {
     let data = await this.getUserResume();
 
     this.setState({ resumes: data });
@@ -39,10 +48,19 @@ class Dashboard extends Component {
   }
 
   async getUserResume() {
+
     try {
-      let response = await axios.get(
-        `${this.apiBaseUrl}product/user?username=${this.username}`
-      );
+      let response = await axios({
+        url: "product/user",
+        method: "GET",
+        baseURL: this.apiBaseUrl,
+        headers: {
+          Authorization: this.token
+        },
+        params: {
+          username: this.username
+        }
+      });
 
       if (response.data.data) {
         return response.data.data;
@@ -50,6 +68,7 @@ class Dashboard extends Component {
         new API().showError(null, "Cannot get data!");
       }
     } catch (error) {
+      console.log("Error from get user resume - " + error);
       new API().showError(error, "Cannot get data!");
     }
   }
@@ -185,14 +204,18 @@ class Dashboard extends Component {
   async enableTopClick(event, id) {
     event.preventDefault();
     try {
-      let params = new URLSearchParams();
-      params.append("username", this.username);
-      params.append("id", id);
-
-      let response = await axios.post(
-        `${this.apiBaseUrl}product/enable`,
-        params
-      );
+      let response = await axios({
+        url: "product/enable",
+        method: "POST",
+        baseURL: this.apiBaseUrl,
+        headers: {
+          Authorization: this.token
+        },
+        params: {
+          username: this.username,
+          id: id
+        }
+      });
 
       if (response.data.data) {
         this.showUserResume();
@@ -207,14 +230,18 @@ class Dashboard extends Component {
   async deleteClick(event, id) {
     event.preventDefault();
     try {
-      let params = new URLSearchParams();
-      params.append("username", this.username);
-      params.append("id", id);
-
-      let response = await axios.post(
-        `${this.apiBaseUrl}product/delete`,
-        params
-      );
+      let response = await axios({
+        url: "product/delete",
+        method: "POST",
+        baseURL: this.apiBaseUrl,
+        headers: {
+          Authorization: this.token
+        },
+        params: {
+          username: this.username,
+          id: id
+        }
+      });
 
       if (response.data.data) {
         this.showUserResume();
@@ -246,8 +273,6 @@ class Dashboard extends Component {
           <strong>Error!</strong> {this.state.msg}
         </div>
       );
-    } else {
-      return;
     }
   }
 
@@ -304,7 +329,6 @@ class Dashboard extends Component {
           </div>
 
           {this.genResumeTable()}
-          {this.renderErrorLoadUser()}
 
           <button
             type="button"
